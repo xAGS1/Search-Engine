@@ -43,7 +43,7 @@ public class LinkedList<T> {
 		}
 
 		Node<T> tmp = head;
-		for (int i = 0; i < index; i++) {
+		for (int i = 0; i < index ; i++) {
 			tmp = tmp.next;
 		}
 		return tmp.data;
@@ -69,6 +69,7 @@ public class LinkedList<T> {
 			size++;
 		}
 	}
+	
 
 	public int getSize() {
 		return size;
@@ -100,6 +101,13 @@ public class LinkedList<T> {
 		else
 			current = current.next;
 	}
+	public boolean last () {
+		return current.next == null;
+	}
+	
+	
+	
+	
 
 	public void display() {
 		Node<T> tmp = head;
@@ -114,16 +122,7 @@ public class LinkedList<T> {
 		System.out.println();
 	}
 
-	@SuppressWarnings("hiding")
-	public static class Node<T> {
-		public T data;
-		public Node<T> next;
-
-		public Node(T data) {
-			this.data = data;
-			next = null;
-		}
-
-	}
+	
+	
 
 }
