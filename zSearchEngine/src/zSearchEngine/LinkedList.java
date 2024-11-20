@@ -1,5 +1,7 @@
 package zSearchEngine;
 
+
+
 public class LinkedList<T> {
 
 	public Node<T> head, current;
@@ -105,6 +107,28 @@ public class LinkedList<T> {
 		return current.next == null;
 	}
 	
+	
+	
+	
+	
+	public void toArray(T[] a) {
+	    if (a.length < size) {
+	        return ;
+	    }
+	    
+	    Node<T> tmp = head;
+	    for (int i = 0; i < size; i++) {
+	        a[i] = tmp.data;
+	        tmp = tmp.next;
+	    }
+	    
+	    if (a.length > size) {
+	        return ;  // If `a` is larger, set the next element to null
+	    }
+	    
+	    return ;
+	}
+
 	
 	
 	

@@ -48,5 +48,9 @@ private int size;
 			next = null;
 		}
 	}
+	
+	
+	
+	
 
 }

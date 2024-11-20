@@ -28,6 +28,11 @@ public class WordFrequency {
 	    public boolean equalsS(WordFrequency wf) {
 	    	return this.docId.equals(wf.docId);
 	    }
+
+		public void setFrequency(int i) {
+			frequency = i;
+			
+		}
 	    
 }
 	

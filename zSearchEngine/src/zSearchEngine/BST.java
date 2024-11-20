@@ -1,5 +1,7 @@
 package zSearchEngine;
 
+import java.util.NoSuchElementException;
+
 public class BST<T> {
 
 	private BSTNode<T> root, current;
@@ -8,7 +10,9 @@ public class BST<T> {
 		root = current = null;
 	}
 
-	public boolean insert(int key, T data) {
+	public boolean insert(String word, T data) {
+		 int key = hash(word);
+		 
 		BSTNode<T> p = root;
 		BSTNode<T> q = current;
 		if (empty()) {
@@ -30,6 +34,12 @@ public class BST<T> {
 			return true;
 		}
 
+	}
+	
+	
+	public int hash(String s) {
+		int index = Math.abs(s.toLowerCase().hashCode());
+		return index;
 	}
 
 	public boolean findKey(int key) {
@@ -56,7 +66,16 @@ public class BST<T> {
 		return false;
 	}
 
-	public boolean remove(int key) {
+	public int getKey() {
+		return current.key;
+		
+	}
+	
+	
+	
+	public boolean remove(String word) {
+		int key =  hash(word);
+		
 		if (empty())return false;
 		RemovalStatus flag = new RemovalStatus();
 		root = removeHelper(key, root, flag);
@@ -92,7 +111,7 @@ public class BST<T> {
 		return node;
 	}
 	
-
+	
 	public T findMin() {
 		if (empty())
 			return null;
@@ -136,6 +155,42 @@ public class BST<T> {
 	public void rootInfo() {
 		System.out.println("Root Data: " + root.data + " | Root Key: " + root.key);
 	}
+	
+	
+	public int size() {
+		return sizeHelper(root);
+	}
+	
+	private int sizeHelper(BSTNode node) {
+		if(node == null) return 0;
+		
+		return 1+ sizeHelper(node.right) + sizeHelper(node.left);
+	
+		
+	}
+	
+	 public T search(String word) {
+	        int key = hash(word);
+	        BSTNode<T> result = searchNode(this.root, key);
+	        
+	        if (result == null) {
+	        	
+	        	return null;
+	           
+	        }
+	        return result.data;
+	    }
+
+	    private BSTNode<T> searchNode(BSTNode<T> node, int key) {
+	        if (node == null || node.key == key) {
+	            return node;
+	        }
+	        if (key < node.key) {
+	            return searchNode(node.left, key);
+	        } else {
+	            return searchNode(node.right, key);
+	        }
+	    }
 
 	// ============= BSTNODE CLASS ============= //
 	private class RemovalStatus {
