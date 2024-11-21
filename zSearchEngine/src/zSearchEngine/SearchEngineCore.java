@@ -4,7 +4,7 @@ public class SearchEngineCore {
 
 	
 	
-	public static LinkedList<WordFrequency> evalBoolUnified(LinkedQueue<String> qq, boolean useBst) {
+	public static LinkedList<WordFrequency> evalBoolUnified(LinkedQueue<String> qq, Use use) { // evaluates boolean queries.
 	    // Stacks for operands and operators
 	    LinkedStack<LinkedList<WordFrequency>> operandStack = new LinkedStack<>();
 	    LinkedStack<String> operatorStack = new LinkedStack<>();
@@ -16,11 +16,16 @@ public class SearchEngineCore {
 
 	        if (word.isEmpty())
 	            continue; // Skip empty strings
-
+	        
 	        boolean isOperator = word.equalsIgnoreCase("AND") || word.equalsIgnoreCase("OR");
-
+	        
+	        if(isOperator && previousWord.isEmpty()) {
+	        	System.err.println("Invalid query: worng operator use. Skipping this part.");
+	        	 continue;
+	        }
+	        
 	        // Validate operators
-	        if (isOperator && (previousWord.isEmpty() || previousWord.equalsIgnoreCase("AND")
+	        if (isOperator && (previousWord.equalsIgnoreCase("AND")
 	                || previousWord.equalsIgnoreCase("OR"))) {
 	            System.err.println("Invalid query: duplicated operators. Skipping this part.");
 	            continue; // Skip duplicate operators
@@ -42,8 +47,10 @@ public class SearchEngineCore {
 	            operatorStack.push(word);
 	        } else {
 	            // Use the appropriate search method based on the flag
-	            LinkedList<WordFrequency> docList = useBst ? Main.searchCopy(word,true) : Main.searchCopy(word,false);
-	            operandStack.push(docList);
+	        	LinkedList<WordFrequency> docList = Main.searchCopy(word,use);
+	        	
+	          //  = use ? Main.searchCopy(word,true) :
+	           operandStack.push(docList);
 	        }
 	        previousWord = word;
 	    }
@@ -56,6 +63,7 @@ public class SearchEngineCore {
 
 	    return operandStack.empty() ? new LinkedList<>() : operandStack.pop();
 	}
+	
 	private static int precedence(String operator) { // Helper method for checking precedence where AND > OR
 		if (operator.equalsIgnoreCase("AND")) {
 			return 2;
@@ -65,7 +73,7 @@ public class SearchEngineCore {
 		return 0;
 	}
 
-	private static LinkedList<WordFrequency> doIntersection(LinkedList<WordFrequency> list1,
+	private static LinkedList<WordFrequency> doIntersection(LinkedList<WordFrequency> list1, // do intersection for two lists
 			LinkedList<WordFrequency> list2) {
 		LinkedList<WordFrequency> intersection = new LinkedList<>();
 
@@ -136,18 +144,20 @@ public class SearchEngineCore {
 	
 	
 	
-	public static LinkedList<WordFrequency> evalRankUnified(LinkedQueue<String> qq, boolean useBst) {
+	public static LinkedList<WordFrequency> evalRankUnified(LinkedQueue<String> qq, Use use) {// evaluates ranked queries.
 	    LinkedList<WordFrequency> result = new LinkedList<>();
-
+	   
+	   
+	    
 	    // Case where the queue has only one word
 	    if (!qq.empty() && qq.length() == 1) {
-	        return Main.searchCopy(qq.serve().trim(), useBst);  // Use searchCopy with the flag
+	        return Main.searchCopy(qq.serve().trim(), use);  // Use searchCopy with the flag
 	    }
 
 	    // Main loop to process all words in the query queue
 	    while (!qq.empty()) {
 	        String word = qq.serve().trim();
-	        LinkedList<WordFrequency> currentList = Main.searchCopy(word, useBst);  // Use the appropriate search method based on the flag
+	        LinkedList<WordFrequency> currentList = Main.searchCopy(word, use);  // Use the appropriate search method based on the flag
 
 	        // Skip if the current word is not indexed
 	        if (currentList.empty()) {

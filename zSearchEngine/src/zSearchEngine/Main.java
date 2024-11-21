@@ -6,55 +6,206 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
-
-
 public class Main {
+	static int tokens;
 	static Scanner scanner = new Scanner(System.in);
 	static LinkedList<String> stopWords = new LinkedList<>();
 	static LinkedList<LinkedList<String>> docWords = new LinkedList<>();
 	static LinkedList<LinkedList<WordFrequency>> invertedIndex = new LinkedList<>();
 	static BST<LinkedList<WordFrequency>> bst = new BST<>();
-
+	static HashMap<String, LinkedList<WordFrequency>> hesh = new HashMap(invertedIndex.getSize()+1);
+	
 	public static void main(String[] args) {
 		String fileCSV = "bin\\dataset.csv"; // csv filePath
 		String fileStopWords = "bin\\stop.txt"; // stopwords filePath
    // one time methods
+		System.out.println("Loading...");
+		long start = System.nanoTime();
 		getStopWords(fileStopWords);
 		processDoc(fileCSV);
 		invertedIndexRankingBst();
+		hashMaker();
+		System.out.println("------------------\nTime taken: " + ((System.nanoTime() - start)/Math.pow(10, 9)) + " seconds to load");
 	// ==========================MAIN===================================	
 	// printDoc();
 		
 		
+	      
+	      
+		String choice = "";
 		
-		System.out.println(System.currentTimeMillis());
+		while(true) {
+			System.out.println("\n========== Main Menu ==========");
+			System.out.println("1. Boolean Retrieval");
+			System.out.println("2. Ranked Retrieval");
+			System.out.println("3. View Indexed Documents Count");
+			System.out.println("4. View Indexed Tokens and Vocabulary Size");
+			System.out.println("0. Exit");
+			System.out.println("================================");
+			System.out.print("Please enter your choice: ");
+			choice = scanner.nextLine().toLowerCase();
+
+			switch (choice) {
+
+			    case "1": // Boolean Retrieval
+			        System.out.println("\n===== Boolean Retrieval Menu =====");
+			        System.out.println("1. Search using Inverted Index List");
+			        System.out.println("2. Search using Binary Search Tree (BST)");
+			        System.out.println("3. Search using Indexed Data");
+			        System.out.println("4. Search using Hash Table");
+			        System.out.println("==================================");
+			        System.out.print("Please select a search method: ");
+			        choice = scanner.nextLine().toLowerCase();
+
+			        if (choice.equals("1")) {
+			            System.out.print("\n(Inverted Index) Enter your Boolean query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayNoIndex(boolRetrieve(choice, Use.inverted));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("2")) {
+			            System.out.print("\n(BST) Enter your Boolean query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayNoIndex(boolRetrieve(choice, Use.bst));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("3")) {
+			            System.out.print("\n(Indexed) Enter your Boolean query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayNoIndex(boolRetrieve(choice, Use.index));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("4")) {
+			            System.out.print("\n(Hash Table) Enter your Boolean query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayNoIndex(boolRetrieve(choice, Use.hash));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else {
+			            System.err.println("Invalid choice. Please select a valid option from the menu.");
+			        }
+			        break;
+
+			    case "2": // Ranked Retrieval
+			        System.out.println("\n===== Ranked Retrieval Menu =====");
+			        System.out.println("1. Search using Inverted Index List");
+			        System.out.println("2. Search using Binary Search Tree (BST)");
+			        System.out.println("3. Search using Indexed Data");
+			        System.out.println("4. Search using Hash Table");
+			        System.out.println("==================================");
+			        System.out.print("Please select a search method: ");
+			        choice = scanner.nextLine().toLowerCase();
+
+			        if (choice.equals("1")) {
+			            System.out.print("\n(Inverted Index) Enter your query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayRankedResults(rankRetrieve(choice, Use.inverted));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("2")) {
+			            System.out.print("\n(BST) Enter your query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayRankedResults(rankRetrieve(choice, Use.bst));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("3")) {
+			            System.out.print("\n(Indexed) Enter your query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayRankedResults(rankRetrieve(choice, Use.index));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else if (choice.equals("4")) {
+			            System.out.print("\n(Hash Table) Enter your query: ");
+			            choice = scanner.nextLine();
+			            System.out.print("\033[1;32m");
+			            long inti = System.nanoTime();
+			            displayRankedResults(rankRetrieve(choice, Use.hash));
+			            System.out.println("------------------\nTime taken: " + ((System.nanoTime() - inti)/Math.pow(10, 9)) + " seconds");
+			            System.out.println("\u001B[0m");
+
+			        } else {
+			            System.err.println("Invalid choice. Please select a valid option from the menu.");
+			        }
+			        break;
+
+			    case "3": // Indexed Document Count
+			    	System.out.print("\033[1;94m");
+			        System.out.printf("Total number of indexed documents: %d\n", docWords.getSize());
+			        System.out.println("\u001B[0m");
+			        break;
+
+			    case "4": // Indexed Tokens and Vocabulary
+			    	System.out.print("\033[1;94m");
+			        System.out.printf("Total number of indexed tokens: %d\n", tokens);
+			        System.out.printf("Vocabulary size: %d\n",invertedIndex.getSize());
+			        System.out.println("\u001B[0m");
+			        break;
+
+			    case "0": // Exit
+			        System.out.println("Exiting the application. Goodbye!");
+			        break;
+
+			    default:
+			        System.err.println("Invalid choice. Please select a valid option from the menu.");
+			}
+
+			if (choice.equals("0")) {
+			    break;
+			}
+
+		}
 	
-		String query0 = " market OR sports"; // <-------| put here querys for boolean Retrieval BST
-		LinkedQueue<String> queryQueue0 = queryToQueue(query0);
-		LinkedList<WordFrequency> resultDocs0 = SearchEngineCore.evalBoolUnified(queryQueue0,true); //change false to true to use BST
-		displayNoIndex(resultDocs0);
 		
 		
 		
-		String rank = "business world market"; // <-------|  here querys for Ranked Retrieval 
-		LinkedQueue<String> queryQueue2 = queryToQueue(rank);
-		LinkedList<WordFrequency> resultDocs2 = SearchEngineCore.evalRankUnified(queryQueue2,true); //change false to true to use BST
-		displayRankedResults(resultDocs2);
 		
-		System.out.println(System.currentTimeMillis());
 		
 		
 		
 	}
 	
-	
+	 
 	
 	
   // ========================================== OPERATIONS ============================================================
 	
+	public static LinkedList<WordFrequency> boolRetrieve(String word, Use use){ // main method for bool retrieve
+		LinkedQueue<String> queryQueue = queryToQueue(word);
+		LinkedList<WordFrequency> resultDocs = SearchEngineCore.evalBoolUnified(queryQueue,use); //change Use. to change search mode
+		return resultDocs;
+	}
+	
+	public static LinkedList<WordFrequency> rankRetrieve(String word, Use use){ // main method for rank retrieve
+		LinkedQueue<String> queryQueue = queryToQueue(word);
+		LinkedList<WordFrequency> resultDocs = SearchEngineCore.evalRankUnified(queryQueue,use);//change Use. to change search mode
+		return resultDocs;
+	}
+	
+	
 	
 
-	public static LinkedQueue<String> queryToQueue(String query) {
+	public static LinkedQueue<String> queryToQueue(String query) { //tokenize query string using StringTokenizer Class and convert it to Queue  
 		LinkedQueue<String> qq = new LinkedQueue<>();
 
 		StringTokenizer tokenizer = new StringTokenizer(query);
@@ -63,16 +214,65 @@ public class Main {
 		}
 		return qq;
 	}
-	// =====================================================================================================
-	public static LinkedList<WordFrequency> searchCopy(String word, boolean useBst) {
-	    if (useBst) {
+	// =======================================Search Mehtods=========================================================
+	public static LinkedList<WordFrequency> searchCopy(String word, Use use) { // Main method for searching
+	    if (use == Use.bst) {
 	        return searchCopyBst(word);  // Search using BST
-	    } else {
-	        return searchCopy(word);  // Search using LinkedList
+	    } else if(use == Use.inverted) {
+	        return searchCopyInverted(word);  // Search using Inverted list
+	    }else if(use == Use.hash) {
+	    	return  searchCopyHash(word);
+	    }else {
+	    	return  searchCopyIndex(word);
 	    }
 	}
 
-	private static LinkedList<WordFrequency> searchCopy(String word) {
+	private static LinkedList<WordFrequency> searchCopyHash(String word) {  // search  for hash
+		LinkedList<WordFrequency> resultCopy =  hesh.get(word.toLowerCase());
+		return resultCopy == null ? new LinkedList<WordFrequency>(): resultCopy;
+	}
+	
+	private static LinkedList<WordFrequency> searchCopyIndex(String word) { // search  for index list
+	    LinkedList<WordFrequency> resultCopy = new LinkedList<>();
+
+	    // Iterate over all documents in docWords
+	    docWords.findFirst();
+	    for (int i = 0; i < docWords.getSize(); i++) {
+	        LinkedList<String> currentEntry = docWords.retrieve(); // Get the current document's words
+
+	        // Search for the word in the current document
+	        currentEntry.findFirst();
+	        for (int j = 0; j < currentEntry.getSize(); j++) {
+	            if (currentEntry.retrieve().equalsIgnoreCase(word)&& !isNumeric(word) ) {
+	                // If word matches, add to resultCopy with its document ID
+	                WordFrequency wf = new WordFrequency(Integer.toString(i), 1);
+	                resultCopy.insert(wf);
+	            }
+	            if (!currentEntry.last()) {
+	                currentEntry.findNext(); // Move to the next word
+	            }
+	        }
+	        if (!docWords.last()) {
+	            docWords.findNext(); // Move to the next document
+	        }
+	    }
+	    // Check for duplicates in resultCopy and merge frequencies
+	    resultCopy.findFirst();
+	    while (!resultCopy.empty() && !resultCopy.last()) {
+	        WordFrequency current = resultCopy.retrieve();
+	        resultCopy.findNext();
+	        while (!resultCopy.last() && resultCopy.retrieve().getDocId().equals(current.getDocId())) {
+	            current.incrementFrequency(); // Merge frequencies
+	            resultCopy.remove(); // Remove duplicate
+	        }
+	    }
+
+	    return resultCopy;
+	}
+
+	
+	
+	private static LinkedList<WordFrequency> searchCopyInverted(String word) {// search  for inverted index list
 	    LinkedList<WordFrequency> resultCopy = new LinkedList<>();
 	    LinkedList<WordFrequency> currentEntry = null;
 	    boolean found = false;
@@ -102,6 +302,7 @@ public class Main {
 	    return resultCopy;
 	}
 	
+	
 	private static LinkedList<WordFrequency> searchCopyBst(String word){ // searchCopy but for BST
 		 LinkedList<WordFrequency> resultCopy = new LinkedList<>(); 
 		 LinkedList<WordFrequency> currentEntry =  bst.search(word.toLowerCase());
@@ -122,7 +323,8 @@ public class Main {
 	
 //=========================================================================================================================	
 
-	private static void invertedIndexRankingBst() {
+	private static void invertedIndexRankingBst() { // invert indexing for lists and bst, and ranking
+		tokens = 0;
 	    if (docWords.empty()) return;
 
 	    docWords.findFirst();
@@ -136,7 +338,7 @@ public class Main {
 
 	            // Skip numeric words
 	            if (isNumeric(word)) continue;
-
+	            tokens++;
 	            WordFrequency wordNode = new WordFrequency(word, -1); // Word itself
 	            WordFrequency wordId = new WordFrequency(docId, 1);  // First frequency for this document
 
@@ -185,7 +387,7 @@ public class Main {
 	                newEntry.insert(wordNode);
 	                newEntry.insert(wordId);
 	                invertedIndex.insert(newEntry);
-
+	               
 	                //  insert into the BST
 	                bst.insert(wordNode.getDocId(), newEntry);
 	            }
@@ -206,7 +408,7 @@ public class Main {
 	
 	
 	
-	public static boolean isNumeric(String str) {
+	public static boolean isNumeric(String str) { // checks if string is a number.
 		if(str != null) {
 			char c = str.charAt(0);
 		 if(c < 48 || c > 57) {
@@ -250,7 +452,7 @@ public class Main {
 		}
 	}
 
-	private static LinkedList<String> processTxt(String text) {
+	private static LinkedList<String> processTxt(String text) { // removes 
 		LinkedList<String> wordsList = new LinkedList<>();
 		String processedText = text.toLowerCase().replaceAll("[^a-z0-9\\s'-]", " ");
 		String[] wordsArray = processedText.split("\\s+");
@@ -266,7 +468,7 @@ public class Main {
 		return wordsList;
 	}
 
-	private static boolean isStopWord(String word) {
+	private static boolean isStopWord(String word) { // checks if a string contains stop words
 		stopWords.findFirst();
 		while (!stopWords.last()) {
 			if (stopWords.retrieve().equals(word)) {
@@ -298,7 +500,27 @@ public class Main {
 			}
 		}
 	}
-  // ======================================DISPLAY METHODS=================================================
+	
+	
+	
+	
+	
+	public static void hashMaker() { // hashs the invertedIndex
+		if(invertedIndex == null) {
+			System.err.println("Initialize the invertedIndex first.");
+			return;
+		}
+		invertedIndex.findFirst();
+		for(int i=0 ; i< invertedIndex.getSize(); i++) {
+			invertedIndex.retrieve().findFirst();
+			hesh.put(invertedIndex.retrieve().retrieve().getDocId(), invertedIndex.retrieve());
+			invertedIndex.findNext();
+		}
+	}
+	
+	
+	
+  // ======================================DISPLAY METHODS======== for debugging purposes=========================================
 	private static void displayFreq(LinkedList<WordFrequency> docs) { // This method displays the invertedIndex <with>  freqeuncy
 		if (!docs.empty()) {
 			docs.findFirst();
@@ -348,7 +570,7 @@ public class Main {
 	
 	
 	
-	private static void displayNoIndex(LinkedList<WordFrequency> docs) {// This method displays the invertedIndex <without>   freqeuncy
+	public static void displayNoIndex(LinkedList<WordFrequency> docs) {// This method displays the invertedIndex <without>   freqeuncy
 		if (!docs.empty()) {
 			docs.findFirst();
 			System.out.print("Result doc IDs: {");
@@ -389,6 +611,7 @@ public class Main {
 	    }
 	}
 
+	
 	
 	// ================================================================================
 	
