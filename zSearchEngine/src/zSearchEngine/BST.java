@@ -6,8 +6,10 @@ public class BST<T> {
 
 	private BSTNode<T> root, current;
 
+	
 	public BST() {
 		root = current = null;
+		
 	}
 
 	public boolean insert(String word, T data) {

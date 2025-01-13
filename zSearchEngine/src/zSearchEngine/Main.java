@@ -7,18 +7,40 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Main {
-	static int tokens;
-	static Scanner scanner = new Scanner(System.in);
-	static LinkedList<String> stopWords = new LinkedList<>();
-	static LinkedList<LinkedList<String>> docWords = new LinkedList<>();
-	static LinkedList<LinkedList<WordFrequency>> invertedIndex = new LinkedList<>();
-	static BST<LinkedList<WordFrequency>> bst = new BST<>();
-	static HashMap<String, LinkedList<WordFrequency>> hesh = new HashMap(invertedIndex.getSize()+1);
+	private static int tokens;
+	public static Scanner scanner = new Scanner(System.in);
+	public static LinkedList<String> stopWords = new LinkedList<>();
+	public static LinkedList<LinkedList<String>> docWords = new LinkedList<>();
+	public static LinkedList<LinkedList<WordFrequency>> invertedIndex = new LinkedList<>();
+	public static BST<LinkedList<WordFrequency>> bst = new BST<>();
+	public static HashMap<String, LinkedList<WordFrequency>> hesh = new HashMap(invertedIndex.getSize()+1);
 	
 	public static void main(String[] args) {
 		String fileCSV = "bin\\dataset.csv"; // csv filePath
 		String fileStopWords = "bin\\stop.txt"; // stopwords filePath
-   // one time methods
+   
+		
+		
+		String choice = "";
+		
+	      while(true) { // this loop let user choose between Datasets
+	    	  System.out.println("\n========== Dataset Menu ==========");
+				System.out.println("1. Normal Dataset.");
+				System.out.println("2. XL Dataset.");
+				System.out.println("0. To exit.");
+				choice = scanner.nextLine().toLowerCase();
+	    	  switch (choice) {
+	    	  case "1": fileCSV = "bin\\dataset.csv";
+	    		  break;
+	    	  case "2": fileCSV = "bin\\datasetXL.csv";
+	    		  break;
+	    	  }
+	    	  if(choice.equals("0") || choice.equals("2") || choice.equals("1")) {
+	    		  break;
+	    	  }
+	      }
+		
+	    	  // one time methods
 		System.out.println("Loading...");
 		long start = System.nanoTime();
 		getStopWords(fileStopWords);
@@ -27,13 +49,11 @@ public class Main {
 		hashMaker();
 		System.out.println("------------------\nTime taken: " + ((System.nanoTime() - start)/Math.pow(10, 9)) + " seconds to load");
 	// ==========================MAIN===================================	
-	// printDoc();
-		
-		
+	//printDoc();
+	
 	      
-	      
-		String choice = "";
 		
+		// MENU
 		while(true) {
 			System.out.println("\n========== Main Menu ==========");
 			System.out.println("1. Boolean Retrieval");
@@ -163,16 +183,13 @@ public class Main {
 			        break;
 
 			    case "0": // Exit
-			        System.out.println("Exiting the application. Goodbye!");
-			        break;
-
+			    	 System.out.println("Exiting the application. Goodbye!");
+					    return;
 			    default:
 			        System.err.println("Invalid choice. Please select a valid option from the menu.");
 			}
 
-			if (choice.equals("0")) {
-			    break;
-			}
+			
 
 		}
 	
@@ -232,7 +249,7 @@ public class Main {
 		return resultCopy == null ? new LinkedList<WordFrequency>(): resultCopy;
 	}
 	
-	private static LinkedList<WordFrequency> searchCopyIndex(String word) { // search  for index list
+	private static LinkedList<WordFrequency> searchCopyIndex(String word) { // search  for index list  O(n * m + n)
 	    LinkedList<WordFrequency> resultCopy = new LinkedList<>();
 
 	    // Iterate over all documents in docWords
@@ -303,7 +320,7 @@ public class Main {
 	}
 	
 	
-	private static LinkedList<WordFrequency> searchCopyBst(String word){ // searchCopy but for BST
+	private static LinkedList<WordFrequency> searchCopyBst(String word){ // searchCopy but for BST  | O(log n + k) or O(n + k)
 		 LinkedList<WordFrequency> resultCopy = new LinkedList<>(); 
 		 LinkedList<WordFrequency> currentEntry =  bst.search(word.toLowerCase());
 		 if(currentEntry != null) {
@@ -323,7 +340,7 @@ public class Main {
 	
 //=========================================================================================================================	
 
-	private static void invertedIndexRankingBst() { // invert indexing for lists and bst, and ranking
+	private static void invertedIndexRankingBst() { // invert indexing for lists and bst, and ranking | O(n*m *k)
 		tokens = 0;
 	    if (docWords.empty()) return;
 
@@ -422,7 +439,7 @@ public class Main {
 	
 	
   // ============================READING STUFF / Proccssing stuff============================================ [1]
-	private static void processDoc(String filePath) { // reading from csv file
+	private static void processDoc(String filePath) { // reading from csv file | O(n * m)
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(filePath));
@@ -521,7 +538,7 @@ public class Main {
 	
 	
   // ======================================DISPLAY METHODS======== for debugging purposes=========================================
-	private static void displayFreq(LinkedList<WordFrequency> docs) { // This method displays the invertedIndex <with>  freqeuncy
+	private static void displayFreq(LinkedList<WordFrequency> docs) { // This method displays the invertedIndex <with>  freqeuncy   [DEBUGGING]
 		if (!docs.empty()) {
 			docs.findFirst();
 			System.out.print("Result doc IDs: {");
@@ -537,7 +554,7 @@ public class Main {
 		}
 	}
 	
-	private static void display(LinkedList<WordFrequency> docs) {// This method displays the invertedIndex <without>   freqeuncy
+	private static void display(LinkedList<WordFrequency> docs) {// This method displays the invertedIndex <without>   freqeuncy  [DEBUGGING]
 		if (!docs.empty()) {
 			docs.findFirst();
 			System.out.print("Result doc IDs: {");
@@ -553,7 +570,7 @@ public class Main {
 		}
 	}
 	
-	private static void printDoc() {  // This method for printing the indexed docs: 0,market, ... 
+	private static void printDoc() {  // This method for printing the indexed docs: 0,market, ...   [DEBUGGING]
 		if(docWords.empty())return;
 		docWords.findFirst();
 		for(int i=0; i < docWords.getSize(); i++) {

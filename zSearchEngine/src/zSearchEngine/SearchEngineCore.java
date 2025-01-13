@@ -49,22 +49,22 @@ public class SearchEngineCore {
 	            // Use the appropriate search method based on the flag
 	        	LinkedList<WordFrequency> docList = Main.searchCopy(word,use);
 	        	
-	          //  = use ? Main.searchCopy(word,true) :
+	          //  = use ? Main.searchCopy(word,true) : 	
 	           operandStack.push(docList);
 	        }
 	        previousWord = word;
 	    }
-
 	    // Process remaining operations in the stack
 	    while (!operatorStack.empty()) {
 	        processOperation(operandStack, operatorStack);
 	        if (operatorStack.getSize() == 1 && operandStack.getSize() == 1) break;
 	    }
-
+	  
 	    return operandStack.empty() ? new LinkedList<>() : operandStack.pop();
 	}
 	
-	private static int precedence(String operator) { // Helper method for checking precedence where AND > OR
+	
+	private static int precedence(String operator) { // Helper method for checking precedence where AND > OR  { O(1) } 
 		if (operator.equalsIgnoreCase("AND")) {
 			return 2;
 		} else if (operator.equalsIgnoreCase("OR")) {
@@ -73,10 +73,15 @@ public class SearchEngineCore {
 		return 0;
 	}
 
+	
 	private static LinkedList<WordFrequency> doIntersection(LinkedList<WordFrequency> list1, // do intersection for two lists
 			LinkedList<WordFrequency> list2) {
 		LinkedList<WordFrequency> intersection = new LinkedList<>();
-
+		
+		if(list1.empty() || list2.empty()) {
+			return intersection;
+		}
+		
 		for (int i = 0; i < list1.getSize(); i++) {
 				// Skip entries with frequency -1 as they words
 			if (list1.get(i).getFrequency() == -1)
@@ -96,7 +101,7 @@ public class SearchEngineCore {
 	}
 	
 
-	private static LinkedList<WordFrequency> doUnion(LinkedList<WordFrequency> list1, LinkedList<WordFrequency> list2) {
+	private static LinkedList<WordFrequency> doUnion(LinkedList<WordFrequency> list1, LinkedList<WordFrequency> list2) { // O(n1 + n2 * n1),
 		LinkedList<WordFrequency> union = new LinkedList<>();
 		// Add list1 to union  ,Skip entries with frequency -1 as they words
 		for (int i = 0; i < list1.getSize(); i++) {
@@ -144,81 +149,52 @@ public class SearchEngineCore {
 	
 	
 	
-	public static LinkedList<WordFrequency> evalRankUnified(LinkedQueue<String> qq, Use use) {// evaluates ranked queries.
+	public static LinkedList<WordFrequency> evalRankUnified(LinkedQueue<String> qq, Use use) { // evaluates the Rank
 	    LinkedList<WordFrequency> result = new LinkedList<>();
-	   
-	   
-	    
-	    // Case where the queue has only one word
-	    if (!qq.empty() && qq.length() == 1) {
-	        return Main.searchCopy(qq.serve().trim(), use);  // Use searchCopy with the flag
-	    }
 
-	    // Main loop to process all words in the query queue
+	   
+	    //  loop for processing query terms
 	    while (!qq.empty()) {
 	        String word = qq.serve().trim();
-	        LinkedList<WordFrequency> currentList = Main.searchCopy(word, use);  // Use the appropriate search method based on the flag
+	        LinkedList<WordFrequency> currentList = Main.searchCopy(word, use);
 
-	        // Skip if the current word is not indexed
+	        // Skip words not indexed
 	        if (currentList.empty()) {
-	            System.err.print("Word '" + word + "' not indexed.\n");
+	       //     System.err.println("Word '" + word + "' not indexed.");
 	            continue;
-	        }
+	        }      
 
-	        // Initialize result list with the first non-empty word list
-	        if (result.empty()) {
-	            currentList.findFirst();
-	            currentList.remove(); // Remove the first word (identifier/marker?)
-	            result = currentList;
-	            continue;
-	        }
-
-	        // Clean up result list from invalid frequencies (-1)
-	        cleanUpFrequency(result);
-
-	        // Merging current list into result list
+	        // Merge current list into result
 	        mergeRankedLists(result, currentList);
 	    }
 
-	    // Clean up result list again after merging
-	    cleanUpFrequency(result);
 	    return result;
 	}
 
-	private static void cleanUpFrequency(LinkedList<WordFrequency> list) {
-	    list.findFirst();
-	    while (!list.empty()) {
-	        if (list.retrieve().getFrequency() == -1) {
-	            list.remove();
-	            if (!list.empty()) list.findFirst(); // Reset to the start if removal
-	        } else if (list.last()) {
-	            break; // Stop if it's the last valid element
-	        } else {
-	            list.findNext();
-	        }
-	    }
-	}
-	private static void mergeRankedLists(LinkedList<WordFrequency> result, LinkedList<WordFrequency> currentList) {
+
+	private static void mergeRankedLists(LinkedList<WordFrequency> result, LinkedList<WordFrequency> currentList) { // merges the result with the currentList
+		
+		if(currentList.empty()) return;
+		
 	    currentList.findFirst();
+	    for(int i=0; i < currentList.getSize(); i++) {
+	        WordFrequency current = currentList.retrieve();
 
-	    while (!currentList.empty()) {
-	        WordFrequency currentFreq = currentList.retrieve();
-
-	        // Skip entries with frequency -1
-	        if (currentFreq.getFrequency() == -1) {
+	        // Skip invalid frequencies
+	        if (current.getFrequency() == -1) {
 	            if (currentList.last()) break;
 	            currentList.findNext();
 	            continue;
 	        }
 
-	        // Search for the document in the result list
+	        // Merge into result
 	        boolean found = false;
 	        result.findFirst();
-	        while (!result.empty()) {
-	            WordFrequency resultFreq = result.retrieve();
-	            if (resultFreq.getDocId().equals(currentFreq.getDocId())) {
-	                // Increment frequency if document found
-	                resultFreq.incrementFrequency();
+	        for(int j=0; j <result.getSize(); j++) {
+	            WordFrequency existing = result.retrieve();
+	            if (existing.getDocId().equals(current.getDocId())) {
+	                // Adding Scores (frequencies) for matches
+	                existing.setFrequency(existing.getFrequency() + current.getFrequency());
 	                found = true;
 	                break;
 	            }
@@ -226,28 +202,21 @@ public class SearchEngineCore {
 	            result.findNext();
 	        }
 
-	        // If the document was not found, insert it into the result list
+	        // If no match found, insert the current WordFrequency into the result list
 	        if (!found) {
-	            result.insert(new WordFrequency(currentFreq.getDocId(), currentFreq.getFrequency()));
+	            result.insert(new WordFrequency(current.getDocId(), current.getFrequency()));
 	        }
 
-	        // Move to the next entry in the currentList
 	        if (currentList.last()) break;
 	        currentList.findNext();
 	    }
 	}
+
+
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 	public static WordFrequency[] mergeSortRanked(WordFrequency[] arr) {
 	    if (arr.length <= 1) {
@@ -304,14 +273,6 @@ public class SearchEngineCore {
 
 	    return result;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

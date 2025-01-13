@@ -1,7 +1,7 @@
 package zSearchEngine;
 
 public class WordFrequency {
-	public String docId;
+	private String docId;
 	private int frequency;
 	
 	  public WordFrequency(String docId, int frequency) {
@@ -34,5 +34,7 @@ public class WordFrequency {
 			
 		}
 	    
+		
+		
 }
 	
